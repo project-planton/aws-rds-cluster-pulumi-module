@@ -6,7 +6,6 @@ import (
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/apiresource"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/awscredential"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/pulumibackendcredential"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/pulumibackendcredential/enums/pulumibackendtype"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob/progress/progressstatus"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/resourcemanager/v1/environment"
@@ -55,7 +54,7 @@ func main() {
 							AccessToken: os.Getenv("PULUMI_ACCESS_TOKEN"),
 							ApiUrl:      os.Getenv("PULUMI_API_URL"),
 						},
-						PulumiBackendType:  pulumibackendtype.PulumiBackendType_http,
+						PulumiBackendType:  pulumibackendcredential.PulumiBackendType_http,
 						PulumiOrganization: os.Getenv("PULUMI_ORGANIZATION"),
 					},
 				},
