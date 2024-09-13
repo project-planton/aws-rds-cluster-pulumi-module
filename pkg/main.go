@@ -7,17 +7,13 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type ResourceStack struct {
-	StackInput *awsaurorapostgres.AwsAuroraPostgresStackInput
-}
-
-func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
-	locals := initializeLocals(ctx, s.StackInput)
+func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostgresStackInput) error {
+	locals := initializeLocals(ctx, stackInput)
 	if locals.AwsAuroraPostgres.Spec.RdsCluster == nil {
 		return errors.Errorf("RDS Cluster stack failed: Ensure that the 'rds_cluster' field within 'spec' is properly defined before proceeding.")
 	}
 
-	awsCredential := s.StackInput.AwsCredential
+	awsCredential := stackInput.AwsCredential
 
 	//create aws provider using the credentials from the input
 	awsProvider, err := aws.NewProvider(ctx,
