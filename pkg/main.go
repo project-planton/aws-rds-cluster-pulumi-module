@@ -8,17 +8,16 @@ import (
 )
 
 type ResourceStack struct {
-	Input  *awsaurorapostgres.AwsAuroraPostgresStackInput
-	Labels map[string]string
+	StackInput *awsaurorapostgres.AwsAuroraPostgresStackInput
 }
 
 func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
-	locals := initializeLocals(ctx, s.Input)
+	locals := initializeLocals(ctx, s.StackInput)
 	if locals.AwsAuroraPostgres.Spec.RdsCluster == nil {
 		return errors.Errorf("RDS Cluster stack failed: Ensure that the 'rds_cluster' field within 'spec' is properly defined before proceeding.")
 	}
 
-	awsCredential := s.Input.AwsCredential
+	awsCredential := s.StackInput.AwsCredential
 
 	//create aws provider using the credentials from the input
 	awsProvider, err := aws.NewProvider(ctx,
