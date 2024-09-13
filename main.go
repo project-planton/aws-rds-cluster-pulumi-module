@@ -22,22 +22,31 @@ func main() {
 					Kind:       "AwsAuroraPostgres",
 					Metadata: &apiresource.ApiResourceMetadata{
 						Name: "demo",
-						Id:   "pgaur-planton-cloud-aws-module-test-demo",
+						Id:   "aurpg-planton-cloud-aws-module-test-demo",
 					},
 					Spec: &awsaurorapostgres.AwsAuroraPostgresSpec{
 						EnvironmentInfo: &environment.ApiResourceEnvironmentInfo{
 							EnvId: os.Getenv("ENV_ID"),
 						},
+						AwsCredentialId: "N/A",
 						StackJobSettings: &stackjob.StackJobSettings{
 							PulumiBackendCredentialId: os.Getenv("PULUMI_BACKEND_CREDENTIAL_ID"),
 							StackJobRunnerId:          os.Getenv("STACK_JOB_RUNNER_ID"),
 						},
 						RdsCluster: &awsaurorapostgres.AwsAuroraPostgresRdsCluster{
-							EngineMode:     "global",
+							EngineMode:     "provisioned",
 							EngineVersion:  "13.11",
 							ClusterFamily:  "aurora-postgresql13",
 							MasterUser:     "postgres",
 							MasterPassword: "password",
+							ClusterSize:    1,
+							InstanceType:   "db.r5.large",
+							AutoScaling: &awsaurorapostgres.AwsAuroraPostgresAutoScaling{
+								IsEnabled: true,
+							},
+							//EnhancedMonitoringRoleEnabled: true,
+							//RdsMonitoringInterval:         1,
+							//EnhancedMonitoringAttributes:  []string{"postgressql", "monitoring"},
 						},
 					},
 				},
@@ -60,12 +69,12 @@ func main() {
 				},
 				StackJob: &stackjob.StackJob{
 					Metadata: &apiresource.ApiResourceMetadata{
-						Id: "pgaur-stack-job",
+						Id: "aurpg-stack-job",
 					},
 					Spec: &stackjob.StackJobSpec{
 						EnvId:           "planton-cloud-aws-module-test",
-						ResourceId:      "pgaur-planton-cloud-aws-module-test-demo",
-						PulumiStackName: "pgaur-planton-cloud-aws-module-test-demo",
+						ResourceId:      "aurpg-planton-cloud-aws-module-test-demo",
+						PulumiStackName: "aurpg-planton-cloud-aws-module-test-demo",
 					},
 					Status: &stackjob.StackJobStatus{
 						PulumiOperations: &stackjob.StackJobStatusPulumiOperationsStatus{

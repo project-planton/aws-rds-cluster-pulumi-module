@@ -18,12 +18,15 @@ func rdsClusterInstance(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Pr
 		Engine:                     createdRdsCluster.Engine,
 		EngineVersion:              createdRdsCluster.EngineVersion,
 		AutoMinorVersionUpgrade:    pulumi.Bool(true),
-		MonitoringInterval:         pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.RdsMonitoringInterval),
 		ApplyImmediately:           pulumi.Bool(true),
 		PreferredMaintenanceWindow: pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.MaintenanceWindow),
 		PreferredBackupWindow:      pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.BackupWindow),
 		CopyTagsToSnapshot:         pulumi.Bool(false),
 		CaCertIdentifier:           pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.CaCertIdentifier),
+	}
+
+	if locals.AwsAuroraPostgres.Spec.RdsCluster.Serverlessv2ScalingConfiguration != nil {
+		clusterInstanceArgs.InstanceClass = pulumi.String("db.serverless")
 	}
 
 	if locals.AwsAuroraPostgres.Spec.RdsCluster.EnhancedMonitoringRoleEnabled {
@@ -32,6 +35,7 @@ func rdsClusterInstance(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Pr
 			return nil, errors.Wrap(err, "failed to create enhanced monitoring iam role")
 		}
 		clusterInstanceArgs.MonitoringRoleArn = enhancedMonitoringIamRole.Arn
+		clusterInstanceArgs.MonitoringInterval = pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.RdsMonitoringInterval)
 	}
 
 	clusterInstanceArgs.PerformanceInsightsEnabled = pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.IsPerformanceInsightsEnabled)
@@ -41,11 +45,12 @@ func rdsClusterInstance(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Pr
 
 	var rdsClusterInstances []*rds.ClusterInstance
 	for i := 0; i < int(locals.AwsAuroraPostgres.Spec.RdsCluster.ClusterSize); i++ {
-		clusterInstanceIdentifier := fmt.Sprintf("%s-%d", locals.AwsAuroraPostgres.Metadata.Id, i)
-		clusterInstanceArgs.Identifier = pulumi.String(clusterInstanceIdentifier)
+		clusterInstanceIdentifier := fmt.Sprintf("%s-%d", locals.AwsAuroraPostgres.Metadata.Id, i+1)
+		clusterInstanceArgsCopy := *clusterInstanceArgs
+		clusterInstanceArgsCopy.Identifier = pulumi.String(clusterInstanceIdentifier)
 		// Create RDS Cluster
 		createdRdsClusterInstance, err := rds.NewClusterInstance(ctx, clusterInstanceIdentifier,
-			clusterInstanceArgs,
+			&clusterInstanceArgsCopy,
 			pulumi.Provider(awsProvider), pulumi.Parent(createdRdsCluster), pulumi.IgnoreChanges([]string{
 				"engine_version",
 			}))

@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"fmt"
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/pkg/errors"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsaurorapostgres"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
@@ -13,11 +15,19 @@ type ResourceStack struct {
 }
 
 func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
-	locals := initializeLocals(ctx, s.Input)
-	if locals.AwsAuroraPostgres.Spec.RdsCluster == nil {
-		return errors.Errorf("RDS Cluster stack failed: Ensure that the 'rds_cluster' field within 'spec' is properly defined before proceeding.")
+	v, err := protovalidate.New(
+		protovalidate.WithDisableLazy(true),
+		protovalidate.WithMessages(s.Input.ApiResource.Spec),
+	)
+	if err != nil {
+		fmt.Println("failed to initialize validator:", err)
 	}
 
+	if err = v.Validate(s.Input.ApiResource.Spec); err != nil {
+		return errors.Errorf("%s", err)
+	}
+
+	locals := initializeLocals(ctx, s.Input)
 	awsCredential := s.Input.AwsCredential
 
 	//create aws provider using the credentials from the input

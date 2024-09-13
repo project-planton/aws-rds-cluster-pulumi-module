@@ -1,36 +1,40 @@
 package pkg
 
 import (
-	"crypto/rand"
-	"github.com/oklog/ulid/v2"
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/rds"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
-	"time"
 )
 
 func rdsCluster(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, createdSecurityGroup *ec2.SecurityGroup) (*rds.Cluster, error) {
 	clusterArgs := &rds.ClusterArgs{
 		ClusterIdentifier:                pulumi.String(locals.AwsAuroraPostgres.Metadata.Id),
 		DatabaseName:                     pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabaseName),
-		SnapshotIdentifier:               pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.SnapshotIdentifier),
 		PreferredMaintenanceWindow:       pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.MaintenanceWindow),
 		NetworkType:                      pulumi.String("IPV4"),
 		IamDatabaseAuthenticationEnabled: pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.IamDatabaseAuthenticationEnabled),
 		Tags:                             pulumi.ToStringMap(locals.Labels),
 		Engine:                           pulumi.String("aurora-postgresql"),
+		BackupRetentionPeriod:            pulumi.Int(5),
 		EngineVersion:                    pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.EngineVersion),
 		AllowMajorVersionUpgrade:         pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.AllowMajorVersionUpgrade),
 		EngineMode:                       pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.EngineMode),
-		Port:                             pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort),
-		BackupRetentionPeriod:            pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.RetentionPeriod),
+		Port:                             pulumi.Int(5432),
 		PreferredBackupWindow:            pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.BackupWindow),
 		CopyTagsToSnapshot:               pulumi.Bool(false),
 		ApplyImmediately:                 pulumi.Bool(true),
 		EnabledCloudwatchLogsExports:     pulumi.ToStringArray(locals.AwsAuroraPostgres.Spec.RdsCluster.EnabledCloudwatchLogsExports),
 		DeletionProtection:               pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.DeletionProtection),
+	}
+
+	if locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort > 0 {
+		clusterArgs.Port = pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort)
+	}
+
+	if locals.AwsAuroraPostgres.Spec.RdsCluster.RetentionPeriod > 0 {
+		clusterArgs.BackupRetentionPeriod = pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.RetentionPeriod)
 	}
 
 	if locals.AwsAuroraPostgres.Spec.RdsCluster.ManageMasterUserPassword {
@@ -43,9 +47,7 @@ func rdsCluster(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, 
 
 	clusterArgs.SkipFinalSnapshot = pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.SkipFinalSnapshot)
 	if !locals.AwsAuroraPostgres.Spec.RdsCluster.SkipFinalSnapshot {
-		entropy := ulid.Monotonic(rand.Reader, 0)
-		ulidValue := ulid.MustNew(ulid.Timestamp(time.Now()), entropy)
-		clusterArgs.FinalSnapshotIdentifier = pulumi.Sprintf("%s-%s", locals.AwsAuroraPostgres.Metadata.Id, ulidValue)
+		clusterArgs.FinalSnapshotIdentifier = pulumi.Sprintf("%s-final-snapshot", locals.AwsAuroraPostgres.Metadata.Id)
 	}
 
 	if locals.AwsAuroraPostgres.Spec.RdsCluster.EngineMode != "serverless" {
@@ -118,24 +120,10 @@ func rdsCluster(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, 
 		clusterArgs.DbClusterParameterGroupName = pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.ClusterParameterGroupName)
 	}
 
-	clusterType := locals.AwsAuroraPostgres.Spec.RdsCluster.ClusterType
-	if clusterType == "global" {
-		clusterArgs.GlobalClusterIdentifier = pulumi.String(locals.AwsAuroraPostgres.Metadata.Id)
-
-		// Create RDS Cluster
-		rdsCluster, err := rds.NewCluster(ctx, "global", clusterArgs, pulumi.Provider(awsProvider), pulumi.IgnoreChanges([]string{
-			"replication_source_identifier", // will be set/managed by Global Cluster
-			"snapshot_identifier",           // if created from a snapshot, will be non-null at creation, but null afterwards
-		}))
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create regional rds cluster")
-		}
-
-		return rdsCluster, nil
-	}
+	clusterArgs.SnapshotIdentifier = pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.SnapshotIdentifier)
 
 	// Create RDS Cluster
-	createdRdsCluster, err := rds.NewCluster(ctx, "regional", clusterArgs, pulumi.Provider(awsProvider))
+	createdRdsCluster, err := rds.NewCluster(ctx, locals.AwsAuroraPostgres.Metadata.Id, clusterArgs, pulumi.Provider(awsProvider))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create regional rds cluster")
 	}

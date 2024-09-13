@@ -19,7 +19,7 @@ func appAutoscaling(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provid
 	}
 
 	autoScalingTarget := &appautoscaling.TargetArgs{
-		ResourceId:        pulumi.Sprintf("cluster:%s", createdRdsCluster.ID().ElementType()),
+		ResourceId:        pulumi.Sprintf("cluster:%s", locals.AwsAuroraPostgres.Metadata.Id),
 		ScalableDimension: pulumi.String("rds:cluster:ReadReplicaCount"),
 		ServiceNamespace:  pulumi.String("rds"),
 		Tags:              pulumi.ToStringMap(locals.Labels),
