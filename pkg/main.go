@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/pkg/errors"
+	"github.com/plantoncloud/aws-aurora-postgres-pulumi-module/pkg/outputs"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsaurorapostgres"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -52,6 +53,10 @@ func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostg
 	if err != nil {
 		return errors.Wrap(err, "failed to create rds cluster")
 	}
+
+	ctx.Export(outputs.AuroraPostgresClusterIdentifier, createdRdsCluster.ClusterIdentifier)
+	ctx.Export(outputs.AuroraPostgresClusterMasterEndpoint, createdRdsCluster.Endpoint)
+	ctx.Export(outputs.AuroraPostgresClusterReaderEndpoint, createdRdsCluster.ReaderEndpoint)
 
 	// Create RDS Cluster Instance
 	_, err = rdsClusterInstance(ctx, locals, awsProvider, createdRdsCluster)
