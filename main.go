@@ -7,6 +7,7 @@ import (
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/awscredential"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/pulumibackendcredential"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob"
+	_ "github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob/progress/progressstatus"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/resourcemanager/v1/environment"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
@@ -15,90 +16,85 @@ import (
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		s := pkg.ResourceStack{
-			Input: &awsaurorapostgres.AwsAuroraPostgresStackInput{
-				ApiResource: &awsaurorapostgres.AwsAuroraPostgres{
-					ApiVersion: "code2cloud.planton.cloud/v1",
-					Kind:       "AwsAuroraPostgres",
-					Metadata: &apiresource.ApiResourceMetadata{
-						Name: "demo",
-						Id:   "aurpg-planton-cloud-aws-module-test-demo",
+
+		stackInput := &awsaurorapostgres.AwsAuroraPostgresStackInput{
+			ApiResource: &awsaurorapostgres.AwsAuroraPostgres{
+				ApiVersion: "code2cloud.planton.cloud/v1",
+				Kind:       "AwsAuroraPostgres",
+				Metadata: &apiresource.ApiResourceMetadata{
+					Name: "demo",
+					Id:   "aurpg-planton-cloud-aws-module-test-demo",
+				},
+				Spec: &awsaurorapostgres.AwsAuroraPostgresSpec{
+					EnvironmentInfo: &environment.ApiResourceEnvironmentInfo{
+						EnvId: os.Getenv("ENV_ID"),
 					},
-					Spec: &awsaurorapostgres.AwsAuroraPostgresSpec{
-						EnvironmentInfo: &environment.ApiResourceEnvironmentInfo{
-							EnvId: os.Getenv("ENV_ID"),
+					AwsCredentialId: "N/A",
+					StackJobSettings: &stackjob.StackJobSettings{
+						PulumiBackendCredentialId: os.Getenv("PULUMI_BACKEND_CREDENTIAL_ID"),
+						StackJobRunnerId:          os.Getenv("STACK_JOB_RUNNER_ID"),
+					},
+					RdsCluster: &awsaurorapostgres.AwsAuroraPostgresRdsCluster{
+						EngineMode:     "provisioned",
+						EngineVersion:  "13.11",
+						ClusterFamily:  "aurora-postgresql13",
+						MasterUser:     "postgres",
+						MasterPassword: "password",
+						ClusterSize:    1,
+						InstanceType:   "db.r5.large",
+						AutoScaling: &awsaurorapostgres.AwsAuroraPostgresAutoScaling{
+							IsEnabled: true,
 						},
-						AwsCredentialId: "N/A",
-						StackJobSettings: &stackjob.StackJobSettings{
-							PulumiBackendCredentialId: os.Getenv("PULUMI_BACKEND_CREDENTIAL_ID"),
-							StackJobRunnerId:          os.Getenv("STACK_JOB_RUNNER_ID"),
-						},
-						RdsCluster: &awsaurorapostgres.AwsAuroraPostgresRdsCluster{
-							EngineMode:     "provisioned",
-							EngineVersion:  "13.11",
-							ClusterFamily:  "aurora-postgresql13",
-							MasterUser:     "postgres",
-							MasterPassword: "password",
-							ClusterSize:    1,
-							InstanceType:   "db.r5.large",
-							AutoScaling: &awsaurorapostgres.AwsAuroraPostgresAutoScaling{
-								IsEnabled: true,
-							},
-							//EnhancedMonitoringRoleEnabled: true,
-							//RdsMonitoringInterval:         1,
-							//EnhancedMonitoringAttributes:  []string{"postgressql", "monitoring"},
-						},
+						//EnhancedMonitoringRoleEnabled: true,
+						//RdsMonitoringInterval:         1,
+						//EnhancedMonitoringAttributes:  []string{"postgressql", "monitoring"},
 					},
 				},
-				AwsCredential: &awscredential.AwsCredential{
-					Spec: &awscredential.AwsCredentialSpec{
-						AccessKeyId:     os.Getenv("AWS_ACCESS_KEY_ID"),
-						SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-						Region:          os.Getenv("AWS_REGION"),
-					},
+			},
+			AwsCredential: &awscredential.AwsCredential{
+				Spec: &awscredential.AwsCredentialSpec{
+					AccessKeyId:     os.Getenv("AWS_ACCESS_KEY_ID"),
+					SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
+					Region:          os.Getenv("AWS_REGION"),
 				},
-				PulumiBackendCredential: &pulumibackendcredential.PulumiBackendCredential{
-					Spec: &pulumibackendcredential.PulumiBackendCredentialSpec{
-						HttpBackend: &pulumibackendcredential.PulumiBackendCredentialHttpBackendSpec{
-							AccessToken: os.Getenv("PULUMI_ACCESS_TOKEN"),
-							ApiUrl:      os.Getenv("PULUMI_API_URL"),
+			},
+			PulumiBackendCredential: &pulumibackendcredential.PulumiBackendCredential{
+				Spec: &pulumibackendcredential.PulumiBackendCredentialSpec{
+					HttpBackend: &pulumibackendcredential.PulumiBackendCredentialHttpBackendSpec{
+						AccessToken: os.Getenv("PULUMI_ACCESS_TOKEN"),
+						ApiUrl:      os.Getenv("PULUMI_API_URL"),
+					},
+					PulumiBackendType:  pulumibackendcredential.PulumiBackendType_http,
+					PulumiOrganization: os.Getenv("PULUMI_ORGANIZATION"),
+				},
+			},
+			StackJob: &stackjob.StackJob{
+				Metadata: &apiresource.ApiResourceMetadata{
+					Id: "aurpg-stack-job",
+				},
+				Spec: &stackjob.StackJobSpec{
+					EnvId:           "planton-cloud-aws-module-test",
+					ResourceId:      "aurpg-planton-cloud-aws-module-test-demo",
+					PulumiStackName: "aurpg-planton-cloud-aws-module-test-demo",
+				},
+				Status: &stackjob.StackJobStatus{
+					PulumiOperations: &stackjob.StackJobStatusPulumiOperationsStatus{
+						Apply: &progressstatus.StackJobProgressPulumiOperationStatus{
+							IsRequired: true,
 						},
-						PulumiBackendType:  pulumibackendcredential.PulumiBackendType_http,
-						PulumiOrganization: os.Getenv("PULUMI_ORGANIZATION"),
-					},
-				},
-				StackJob: &stackjob.StackJob{
-					Metadata: &apiresource.ApiResourceMetadata{
-						Id: "aurpg-stack-job",
-					},
-					Spec: &stackjob.StackJobSpec{
-						EnvId:           "planton-cloud-aws-module-test",
-						ResourceId:      "aurpg-planton-cloud-aws-module-test-demo",
-						PulumiStackName: "aurpg-planton-cloud-aws-module-test-demo",
-					},
-					Status: &stackjob.StackJobStatus{
-						PulumiOperations: &stackjob.StackJobStatusPulumiOperationsStatus{
-							Apply: &progressstatus.StackJobProgressPulumiOperationStatus{
-								IsRequired: true,
-							},
-							ApplyPreview: &progressstatus.StackJobProgressPulumiOperationStatus{
-								IsRequired: false,
-							},
-							Destroy: &progressstatus.StackJobProgressPulumiOperationStatus{
-								IsRequired: false,
-							},
-							DestroyPreview: &progressstatus.StackJobProgressPulumiOperationStatus{
-								IsRequired: false,
-							},
+						ApplyPreview: &progressstatus.StackJobProgressPulumiOperationStatus{
+							IsRequired: false,
+						},
+						Destroy: &progressstatus.StackJobProgressPulumiOperationStatus{
+							IsRequired: false,
+						},
+						DestroyPreview: &progressstatus.StackJobProgressPulumiOperationStatus{
+							IsRequired: false,
 						},
 					},
 				},
 			},
 		}
-		err := s.Resources(ctx)
-		if err != nil {
-			return err
-		}
-		return nil
+		return pkg.Resources(ctx, stackInput)
 	})
 }

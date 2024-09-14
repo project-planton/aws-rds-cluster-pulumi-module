@@ -14,21 +14,21 @@ type ResourceStack struct {
 	Labels map[string]string
 }
 
-func (s *ResourceStack) Resources(ctx *pulumi.Context) error {
+func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostgresStackInput) error {
 	v, err := protovalidate.New(
 		protovalidate.WithDisableLazy(true),
-		protovalidate.WithMessages(s.Input.ApiResource.Spec),
+		protovalidate.WithMessages(stackInput.ApiResource.Spec),
 	)
 	if err != nil {
 		fmt.Println("failed to initialize validator:", err)
 	}
 
-	if err = v.Validate(s.Input.ApiResource.Spec); err != nil {
+	if err = v.Validate(stackInput.ApiResource.Spec); err != nil {
 		return errors.Errorf("%s", err)
 	}
 
-	locals := initializeLocals(ctx, s.Input)
-	awsCredential := s.Input.AwsCredential
+	locals := initializeLocals(ctx, stackInput)
+	awsCredential := stackInput.AwsCredential
 
 	//create aws provider using the credentials from the input
 	awsProvider, err := aws.NewProvider(ctx,
