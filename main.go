@@ -8,7 +8,7 @@ import (
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/pulumibackendcredential"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob"
 	_ "github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob/progress/progressstatus"
+	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/iac/v1/stackjob/enums/pulumioperationtype"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/resourcemanager/v1/environment"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"os"
@@ -18,7 +18,7 @@ func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 
 		stackInput := &awsaurorapostgres.AwsAuroraPostgresStackInput{
-			ApiResource: &awsaurorapostgres.AwsAuroraPostgres{
+			Target: &awsaurorapostgres.AwsAuroraPostgres{
 				ApiVersion: "code2cloud.planton.cloud/v1",
 				Kind:       "AwsAuroraPostgres",
 				Metadata: &apiresource.ApiResourceMetadata{
@@ -51,47 +51,25 @@ func main() {
 					},
 				},
 			},
-			AwsCredential: &awscredential.AwsCredential{
-				Spec: &awscredential.AwsCredentialSpec{
-					AccessKeyId:     os.Getenv("AWS_ACCESS_KEY_ID"),
-					SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
-					Region:          os.Getenv("AWS_REGION"),
-				},
+			AwsCredential: &awscredential.AwsCredentialSpec{
+				AccessKeyId:     os.Getenv("AWS_ACCESS_KEY_ID"),
+				SecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
+				Region:          os.Getenv("AWS_REGION"),
 			},
-			PulumiBackendCredential: &pulumibackendcredential.PulumiBackendCredential{
-				Spec: &pulumibackendcredential.PulumiBackendCredentialSpec{
+			Pulumi: &stackjob.StackPulumiInput{
+				Operation: pulumioperationtype.PulumiOperationType_up,
+				Preview:   true,
+				Project: &stackjob.PulumiProject{
+					Name: "planton-cloud-aws-module-test",
+				},
+				StackName: "aurpg-planton-cloud-aws-module-test-demo",
+				Backend: &pulumibackendcredential.PulumiBackendCredentialSpec{
 					HttpBackend: &pulumibackendcredential.PulumiBackendCredentialHttpBackendSpec{
 						AccessToken: os.Getenv("PULUMI_ACCESS_TOKEN"),
 						ApiUrl:      os.Getenv("PULUMI_API_URL"),
 					},
 					PulumiBackendType:  pulumibackendcredential.PulumiBackendType_http,
 					PulumiOrganization: os.Getenv("PULUMI_ORGANIZATION"),
-				},
-			},
-			StackJob: &stackjob.StackJob{
-				Metadata: &apiresource.ApiResourceMetadata{
-					Id: "aurpg-stack-job",
-				},
-				Spec: &stackjob.StackJobSpec{
-					EnvId:           "planton-cloud-aws-module-test",
-					ResourceId:      "aurpg-planton-cloud-aws-module-test-demo",
-					PulumiStackName: "aurpg-planton-cloud-aws-module-test-demo",
-				},
-				Status: &stackjob.StackJobStatus{
-					PulumiOperations: &stackjob.StackJobStatusPulumiOperationsStatus{
-						Apply: &progressstatus.StackJobProgressPulumiOperationStatus{
-							IsRequired: true,
-						},
-						ApplyPreview: &progressstatus.StackJobProgressPulumiOperationStatus{
-							IsRequired: false,
-						},
-						Destroy: &progressstatus.StackJobProgressPulumiOperationStatus{
-							IsRequired: false,
-						},
-						DestroyPreview: &progressstatus.StackJobProgressPulumiOperationStatus{
-							IsRequired: false,
-						},
-					},
 				},
 			},
 		}

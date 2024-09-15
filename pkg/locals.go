@@ -14,7 +14,7 @@ func initializeLocals(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuro
 	locals := &Locals{}
 
 	//assign value for the locals variable to make it available across the project
-	locals.AwsAuroraPostgres = stackInput.ApiResource
+	locals.AwsAuroraPostgres = stackInput.Target
 
 	return locals
 }

@@ -18,13 +18,13 @@ type ResourceStack struct {
 func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostgresStackInput) error {
 	v, err := protovalidate.New(
 		protovalidate.WithDisableLazy(true),
-		protovalidate.WithMessages(stackInput.ApiResource.Spec),
+		protovalidate.WithMessages(stackInput.Target.Spec),
 	)
 	if err != nil {
 		fmt.Println("failed to initialize validator:", err)
 	}
 
-	if err = v.Validate(stackInput.ApiResource.Spec); err != nil {
+	if err = v.Validate(stackInput.Target.Spec); err != nil {
 		return errors.Errorf("%s", err)
 	}
 
@@ -35,9 +35,9 @@ func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostg
 	awsProvider, err := aws.NewProvider(ctx,
 		"classic-provider",
 		&aws.ProviderArgs{
-			AccessKey: pulumi.String(awsCredential.Spec.AccessKeyId),
-			SecretKey: pulumi.String(awsCredential.Spec.SecretAccessKey),
-			Region:    pulumi.String(awsCredential.Spec.Region),
+			AccessKey: pulumi.String(awsCredential.AccessKeyId),
+			SecretKey: pulumi.String(awsCredential.SecretAccessKey),
+			Region:    pulumi.String(awsCredential.Region),
 		})
 	if err != nil {
 		return errors.Wrap(err, "failed to create aws provider")
