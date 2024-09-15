@@ -1,4 +1,4 @@
-module github.com/plantoncloud/aws-aurora-postgres-pulumi-module
+module github.com/plantoncloud/aws-rds-cluster-pulumi-module
 
 go 1.23.0
 

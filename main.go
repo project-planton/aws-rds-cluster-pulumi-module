@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/plantoncloud/aws-aurora-postgres-pulumi-module/pkg"
+	"github.com/plantoncloud/aws-rds-cluster-pulumi-module/pkg"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsrdscluster"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/apiresource"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/awscredential"
