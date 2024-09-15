@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/plantoncloud/aws-aurora-postgres-pulumi-module/pkg"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsaurorapostgres"
+	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsrdscluster"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/commons/apiresource"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/awscredential"
 	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/connect/v1/pulumibackendcredential"
@@ -17,15 +17,15 @@ import (
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 
-		stackInput := &awsaurorapostgres.AwsAuroraPostgresStackInput{
-			Target: &awsaurorapostgres.AwsAuroraPostgres{
+		stackInput := &awsrdscluster.AwsRdsClusterStackInput{
+			Target: &awsrdscluster.AwsRdsCluster{
 				ApiVersion: "code2cloud.planton.cloud/v1",
-				Kind:       "AwsAuroraPostgres",
+				Kind:       "AwsRdsCluster",
 				Metadata: &apiresource.ApiResourceMetadata{
 					Name: "demo",
 					Id:   "aurpg-planton-cloud-aws-module-test-demo",
 				},
-				Spec: &awsaurorapostgres.AwsAuroraPostgresSpec{
+				Spec: &awsrdscluster.AwsRdsClusterSpec{
 					EnvironmentInfo: &environment.ApiResourceEnvironmentInfo{
 						EnvId: os.Getenv("ENV_ID"),
 					},
@@ -34,21 +34,19 @@ func main() {
 						PulumiBackendCredentialId: os.Getenv("PULUMI_BACKEND_CREDENTIAL_ID"),
 						StackJobRunnerId:          os.Getenv("STACK_JOB_RUNNER_ID"),
 					},
-					RdsCluster: &awsaurorapostgres.AwsAuroraPostgresRdsCluster{
-						EngineMode:     "provisioned",
-						EngineVersion:  "13.11",
-						ClusterFamily:  "aurora-postgresql13",
-						MasterUser:     "postgres",
-						MasterPassword: "password",
-						ClusterSize:    1,
-						InstanceType:   "db.r5.large",
-						AutoScaling: &awsaurorapostgres.AwsAuroraPostgresAutoScaling{
-							IsEnabled: true,
-						},
-						//EnhancedMonitoringRoleEnabled: true,
-						//RdsMonitoringInterval:         1,
-						//EnhancedMonitoringAttributes:  []string{"postgressql", "monitoring"},
+					EngineMode:     "provisioned",
+					EngineVersion:  "13.11",
+					ClusterFamily:  "aurora-postgresql13",
+					MasterUser:     "postgres",
+					MasterPassword: "password",
+					ClusterSize:    1,
+					InstanceType:   "db.r5.large",
+					AutoScaling: &awsrdscluster.AwsRdsClusterAutoScaling{
+						IsEnabled: true,
 					},
+					//EnhancedMonitoringRoleEnabled: true,
+					//RdsMonitoringInterval:         1,
+					//EnhancedMonitoringAttributes:  []string{"postgressql", "monitoring"},
 				},
 			},
 			AwsCredential: &awscredential.AwsCredentialSpec{
@@ -64,7 +62,7 @@ func main() {
 				},
 				StackName: "aurpg-planton-cloud-aws-module-test-demo",
 				Backend: &pulumibackendcredential.PulumiBackendCredentialSpec{
-					HttpBackend: &pulumibackendcredential.PulumiBackendCredentialHttpBackendSpec{
+					Http: &pulumibackendcredential.PulumiHttpBackend{
 						AccessToken: os.Getenv("PULUMI_ACCESS_TOKEN"),
 						ApiUrl:      os.Getenv("PULUMI_API_URL"),
 					},

@@ -9,7 +9,7 @@ import (
 
 func clusterParameterGroup(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider) (*rds.ClusterParameterGroup, error) {
 	var clusterParameterGroupParameterArray = rds.ClusterParameterGroupParameterArray{}
-	for _, parameter := range locals.AwsAuroraPostgres.Spec.RdsCluster.ClusterParameters {
+	for _, parameter := range locals.AwsRdsCluster.Spec.ClusterParameters {
 		clusterParameterGroupParameterArray = append(clusterParameterGroupParameterArray, &rds.ClusterParameterGroupParameterArgs{
 			ApplyMethod: pulumi.String(parameter.ApplyMethod),
 			Name:        pulumi.String(parameter.Name),
@@ -18,8 +18,8 @@ func clusterParameterGroup(ctx *pulumi.Context, locals *Locals, awsProvider *aws
 	}
 
 	clusterParameterGroupArgs := &rds.ClusterParameterGroupArgs{
-		NamePrefix: pulumi.Sprintf("%s-", locals.AwsAuroraPostgres.Metadata.Id),
-		Family:     pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.ClusterFamily),
+		NamePrefix: pulumi.Sprintf("%s-", locals.AwsRdsCluster.Metadata.Id),
+		Family:     pulumi.String(locals.AwsRdsCluster.Spec.ClusterFamily),
 		Tags:       pulumi.ToStringMap(locals.Labels),
 		Parameters: clusterParameterGroupParameterArray,
 	}

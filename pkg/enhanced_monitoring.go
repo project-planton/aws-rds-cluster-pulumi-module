@@ -36,9 +36,9 @@ func enhancedMonitoring(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Pr
 	}
 
 	regexReplaceChars := "[^a-zA-Z0-9-]"
-	enhancedMonitoringRoleName := fmt.Sprintf("%s-emr", locals.AwsAuroraPostgres.Metadata.Id)
-	if len(locals.AwsAuroraPostgres.Spec.RdsCluster.EnhancedMonitoringAttributes) > 0 {
-		normalizedAttributes := normalizeAttributes(locals.AwsAuroraPostgres.Spec.RdsCluster.EnhancedMonitoringAttributes, regexReplaceChars)
+	enhancedMonitoringRoleName := fmt.Sprintf("%s-emr", locals.AwsRdsCluster.Metadata.Id)
+	if len(locals.AwsRdsCluster.Spec.EnhancedMonitoringAttributes) > 0 {
+		normalizedAttributes := normalizeAttributes(locals.AwsRdsCluster.Spec.EnhancedMonitoringAttributes, regexReplaceChars)
 		enhancedMonitoringRoleNameFull := strings.Join(normalizedAttributes, "_")
 		enhancedMonitoringRoleName = truncateID(enhancedMonitoringRoleNameFull, 64)
 	}

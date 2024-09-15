@@ -10,8 +10,8 @@ import (
 
 func appAutoscaling(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, createdRdsCluster *rds.Cluster) error {
 	var isAutoScalingEnabled = false
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling != nil {
-		isAutoScalingEnabled = locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.IsEnabled
+	if locals.AwsRdsCluster.Spec.AutoScaling != nil {
+		isAutoScalingEnabled = locals.AwsRdsCluster.Spec.AutoScaling.IsEnabled
 	}
 
 	if !isAutoScalingEnabled {
@@ -19,21 +19,21 @@ func appAutoscaling(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provid
 	}
 
 	autoScalingTarget := &appautoscaling.TargetArgs{
-		ResourceId:        pulumi.Sprintf("cluster:%s", locals.AwsAuroraPostgres.Metadata.Id),
+		ResourceId:        pulumi.Sprintf("cluster:%s", locals.AwsRdsCluster.Metadata.Id),
 		ScalableDimension: pulumi.String("rds:cluster:ReadReplicaCount"),
 		ServiceNamespace:  pulumi.String("rds"),
 		Tags:              pulumi.ToStringMap(locals.Labels),
 	}
 
 	minCapacity := 1
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.MinCapacity > 0 {
-		minCapacity = int(locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.MinCapacity)
+	if locals.AwsRdsCluster.Spec.AutoScaling.MinCapacity > 0 {
+		minCapacity = int(locals.AwsRdsCluster.Spec.AutoScaling.MinCapacity)
 	}
 	autoScalingTarget.MinCapacity = pulumi.Int(minCapacity)
 
 	maxCapacity := 5
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.MaxCapacity > 0 {
-		maxCapacity = int(locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.MaxCapacity)
+	if locals.AwsRdsCluster.Spec.AutoScaling.MaxCapacity > 0 {
+		maxCapacity = int(locals.AwsRdsCluster.Spec.AutoScaling.MaxCapacity)
 	}
 	autoScalingTarget.MaxCapacity = pulumi.Int(maxCapacity)
 
@@ -45,36 +45,36 @@ func appAutoscaling(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provid
 	}
 
 	autoScalingTargetPolicy := &appautoscaling.PolicyArgs{
-		Name:              pulumi.String(locals.AwsAuroraPostgres.Metadata.Id),
+		Name:              pulumi.String(locals.AwsRdsCluster.Metadata.Id),
 		ResourceId:        replicasTarget.ResourceId,
 		ScalableDimension: replicasTarget.ScalableDimension,
 		ServiceNamespace:  replicasTarget.ServiceNamespace,
 	}
 
 	policyType := "TargetTrackingScaling"
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.PolicyType != "" {
-		policyType = locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.PolicyType
+	if locals.AwsRdsCluster.Spec.AutoScaling.PolicyType != "" {
+		policyType = locals.AwsRdsCluster.Spec.AutoScaling.PolicyType
 	}
 	autoScalingTargetPolicy.PolicyType = pulumi.String(policyType)
 
 	targetMetrics := "RDSReaderAverageCPUUtilization"
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.TargetMetrics != "" {
-		targetMetrics = locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.TargetMetrics
+	if locals.AwsRdsCluster.Spec.AutoScaling.TargetMetrics != "" {
+		targetMetrics = locals.AwsRdsCluster.Spec.AutoScaling.TargetMetrics
 	}
 
 	targetValue := 75.0
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.TargetValue > 0 {
-		targetValue = locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.TargetValue
+	if locals.AwsRdsCluster.Spec.AutoScaling.TargetValue > 0 {
+		targetValue = locals.AwsRdsCluster.Spec.AutoScaling.TargetValue
 	}
 
 	scaleInCoolDown := 300
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.ScaleInCooldown > 0 {
-		scaleInCoolDown = int(locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.ScaleInCooldown)
+	if locals.AwsRdsCluster.Spec.AutoScaling.ScaleInCooldown > 0 {
+		scaleInCoolDown = int(locals.AwsRdsCluster.Spec.AutoScaling.ScaleInCooldown)
 	}
 
 	scaleOutCoolDown := 300
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.ScaleOutCooldown > 0 {
-		scaleOutCoolDown = int(locals.AwsAuroraPostgres.Spec.RdsCluster.AutoScaling.ScaleOutCooldown)
+	if locals.AwsRdsCluster.Spec.AutoScaling.ScaleOutCooldown > 0 {
+		scaleOutCoolDown = int(locals.AwsRdsCluster.Spec.AutoScaling.ScaleOutCooldown)
 	}
 
 	targetTrackingScalingPolicyConfiguration := &appautoscaling.PolicyTargetTrackingScalingPolicyConfigurationArgs{

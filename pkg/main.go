@@ -5,17 +5,17 @@ import (
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/pkg/errors"
 	"github.com/plantoncloud/aws-aurora-postgres-pulumi-module/pkg/outputs"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsaurorapostgres"
+	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsrdscluster"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type ResourceStack struct {
-	Input  *awsaurorapostgres.AwsAuroraPostgresStackInput
+	Input  *awsrdscluster.AwsRdsClusterStackInput
 	Labels map[string]string
 }
 
-func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostgresStackInput) error {
+func Resources(ctx *pulumi.Context, stackInput *awsrdscluster.AwsRdsClusterStackInput) error {
 	v, err := protovalidate.New(
 		protovalidate.WithDisableLazy(true),
 		protovalidate.WithMessages(stackInput.Target.Spec),
@@ -54,9 +54,9 @@ func Resources(ctx *pulumi.Context, stackInput *awsaurorapostgres.AwsAuroraPostg
 		return errors.Wrap(err, "failed to create rds cluster")
 	}
 
-	ctx.Export(outputs.AuroraPostgresClusterIdentifier, createdRdsCluster.ClusterIdentifier)
-	ctx.Export(outputs.AuroraPostgresClusterMasterEndpoint, createdRdsCluster.Endpoint)
-	ctx.Export(outputs.AuroraPostgresClusterReaderEndpoint, createdRdsCluster.ReaderEndpoint)
+	ctx.Export(outputs.RdsClusterIdentifier, createdRdsCluster.ClusterIdentifier)
+	ctx.Export(outputs.RdsClusterMasterEndpoint, createdRdsCluster.Endpoint)
+	ctx.Export(outputs.RdsClusterReaderEndpoint, createdRdsCluster.ReaderEndpoint)
 
 	// Create RDS Cluster Instance
 	_, err = rdsClusterInstance(ctx, locals, awsProvider, createdRdsCluster)

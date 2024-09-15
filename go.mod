@@ -10,7 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/bufbuild/protovalidate-go v0.6.5
 	github.com/pkg/errors v0.9.1
-	github.com/plantoncloud/planton-cloud-apis v0.1.56
+	github.com/plantoncloud/planton-cloud-apis v0.1.60
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.42.1
 	github.com/pulumi/pulumi/sdk/v3 v3.130.0
 )

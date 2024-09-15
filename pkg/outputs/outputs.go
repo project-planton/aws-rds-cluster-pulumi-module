@@ -1,7 +1,7 @@
 package outputs
 
 const (
-	AuroraPostgresClusterMasterEndpoint = "aurora-postgres-cluster-master-endpoint"
-	AuroraPostgresClusterIdentifier     = "aurora-postgres-cluster-identifier"
-	AuroraPostgresClusterReaderEndpoint = "aurora-postgres-cluster-reader-endpoint"
+	RdsClusterMasterEndpoint = "rds-cluster-master-endpoint"
+	RdsClusterIdentifier     = "rds-cluster-identifier"
+	RdsClusterReaderEndpoint = "rds-cluster-reader-endpoint"
 )
