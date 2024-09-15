@@ -11,41 +11,46 @@ import (
 func rdsClusterInstance(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, createdRdsCluster *rds.Cluster) ([]*rds.ClusterInstance, error) {
 	clusterInstanceArgs := &rds.ClusterInstanceArgs{
 		ClusterIdentifier:          createdRdsCluster.ID(),
-		InstanceClass:              pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.InstanceType),
+		InstanceClass:              pulumi.String(locals.AwsRdsCluster.Spec.InstanceType),
 		DbSubnetGroupName:          createdRdsCluster.DbSubnetGroupName,
-		PubliclyAccessible:         pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.IsPubliclyAccessible),
+		PubliclyAccessible:         pulumi.Bool(locals.AwsRdsCluster.Spec.IsPubliclyAccessible),
 		Tags:                       pulumi.ToStringMap(locals.Labels),
 		Engine:                     createdRdsCluster.Engine,
 		EngineVersion:              createdRdsCluster.EngineVersion,
 		AutoMinorVersionUpgrade:    pulumi.Bool(true),
-		MonitoringInterval:         pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.RdsMonitoringInterval),
 		ApplyImmediately:           pulumi.Bool(true),
-		PreferredMaintenanceWindow: pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.MaintenanceWindow),
-		PreferredBackupWindow:      pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.BackupWindow),
+		PreferredMaintenanceWindow: pulumi.String(locals.AwsRdsCluster.Spec.MaintenanceWindow),
+		PreferredBackupWindow:      pulumi.String(locals.AwsRdsCluster.Spec.BackupWindow),
 		CopyTagsToSnapshot:         pulumi.Bool(false),
-		CaCertIdentifier:           pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.CaCertIdentifier),
+		CaCertIdentifier:           pulumi.String(locals.AwsRdsCluster.Spec.CaCertIdentifier),
 	}
 
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.EnhancedMonitoringRoleEnabled {
+	if locals.AwsRdsCluster.Spec.Serverlessv2ScalingConfiguration != nil {
+		clusterInstanceArgs.InstanceClass = pulumi.String("db.serverless")
+	}
+
+	if locals.AwsRdsCluster.Spec.EnhancedMonitoringRoleEnabled {
 		enhancedMonitoringIamRole, err := enhancedMonitoring(ctx, locals, awsProvider)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to create enhanced monitoring iam role")
 		}
 		clusterInstanceArgs.MonitoringRoleArn = enhancedMonitoringIamRole.Arn
+		clusterInstanceArgs.MonitoringInterval = pulumi.Int(locals.AwsRdsCluster.Spec.RdsMonitoringInterval)
 	}
 
-	clusterInstanceArgs.PerformanceInsightsEnabled = pulumi.Bool(locals.AwsAuroraPostgres.Spec.RdsCluster.IsPerformanceInsightsEnabled)
-	if locals.AwsAuroraPostgres.Spec.RdsCluster.IsPerformanceInsightsEnabled {
-		clusterInstanceArgs.PerformanceInsightsKmsKeyId = pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.PerformanceInsightsKmsKeyId)
+	clusterInstanceArgs.PerformanceInsightsEnabled = pulumi.Bool(locals.AwsRdsCluster.Spec.IsPerformanceInsightsEnabled)
+	if locals.AwsRdsCluster.Spec.IsPerformanceInsightsEnabled {
+		clusterInstanceArgs.PerformanceInsightsKmsKeyId = pulumi.String(locals.AwsRdsCluster.Spec.PerformanceInsightsKmsKeyId)
 	}
 
 	var rdsClusterInstances []*rds.ClusterInstance
-	for i := 0; i < int(locals.AwsAuroraPostgres.Spec.RdsCluster.ClusterSize); i++ {
-		clusterInstanceIdentifier := fmt.Sprintf("%s-%d", locals.AwsAuroraPostgres.Metadata.Id, i)
-		clusterInstanceArgs.Identifier = pulumi.String(clusterInstanceIdentifier)
+	for i := 0; i < int(locals.AwsRdsCluster.Spec.ClusterSize); i++ {
+		clusterInstanceIdentifier := fmt.Sprintf("%s-%d", locals.AwsRdsCluster.Metadata.Id, i+1)
+		clusterInstanceArgsCopy := *clusterInstanceArgs
+		clusterInstanceArgsCopy.Identifier = pulumi.String(clusterInstanceIdentifier)
 		// Create RDS Cluster
 		createdRdsClusterInstance, err := rds.NewClusterInstance(ctx, clusterInstanceIdentifier,
-			clusterInstanceArgs,
+			&clusterInstanceArgsCopy,
 			pulumi.Provider(awsProvider), pulumi.Parent(createdRdsCluster), pulumi.IgnoreChanges([]string{
 				"engine_version",
 			}))

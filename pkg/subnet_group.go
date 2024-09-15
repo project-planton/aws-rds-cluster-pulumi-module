@@ -9,8 +9,8 @@ import (
 
 func subnetGroup(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider) (*rds.SubnetGroup, error) {
 	subnetGroup, err := rds.NewSubnetGroup(ctx, "default", &rds.SubnetGroupArgs{
-		Name:      pulumi.String(locals.AwsAuroraPostgres.Metadata.Id),
-		SubnetIds: pulumi.ToStringArray(locals.AwsAuroraPostgres.Spec.RdsCluster.SubnetIds),
+		Name:      pulumi.String(locals.AwsRdsCluster.Metadata.Id),
+		SubnetIds: pulumi.ToStringArray(locals.AwsRdsCluster.Spec.SubnetIds),
 		Tags:      pulumi.ToStringMap(locals.Labels),
 	}, pulumi.Provider(awsProvider))
 	if err != nil {

@@ -9,21 +9,21 @@ import (
 
 func securityGroup(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider) (*ec2.SecurityGroup, error) {
 	defaultSecurityGroup, err := ec2.NewSecurityGroup(ctx, "default", &ec2.SecurityGroupArgs{
-		Name:        pulumi.String(locals.AwsAuroraPostgres.Metadata.Id),
+		Name:        pulumi.String(locals.AwsRdsCluster.Metadata.Id),
 		Description: pulumi.String("Allow inbound traffic from the security groups"),
-		VpcId:       pulumi.String(locals.AwsAuroraPostgres.Spec.RdsCluster.VpcId),
+		VpcId:       pulumi.String(locals.AwsRdsCluster.Spec.VpcId),
 		Tags:        pulumi.ToStringMap(locals.Labels),
 	}, pulumi.Provider(awsProvider))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create default security group")
 	}
 
-	for _, securityGroupId := range locals.AwsAuroraPostgres.Spec.RdsCluster.SecurityGroupIds {
+	for _, securityGroupId := range locals.AwsRdsCluster.Spec.SecurityGroupIds {
 		_, err := ec2.NewSecurityGroupRule(ctx, "ingress security groups", &ec2.SecurityGroupRuleArgs{
 			Description:           pulumi.String("Allow inbound traffic from existing Security Groups"),
 			Type:                  pulumi.String("ingress"),
-			FromPort:              pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort),
-			ToPort:                pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort),
+			FromPort:              pulumi.Int(locals.AwsRdsCluster.Spec.DatabasePort),
+			ToPort:                pulumi.Int(locals.AwsRdsCluster.Spec.DatabasePort),
 			Protocol:              pulumi.String("tcp"),
 			SourceSecurityGroupId: pulumi.String(securityGroupId),
 			SecurityGroupId:       defaultSecurityGroup.ID(),
@@ -33,14 +33,14 @@ func securityGroup(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provide
 		}
 	}
 
-	if len(locals.AwsAuroraPostgres.Spec.RdsCluster.AllowedCidrBlocks) > 0 {
+	if len(locals.AwsRdsCluster.Spec.AllowedCidrBlocks) > 0 {
 		_, err := ec2.NewSecurityGroupRule(ctx, "ingress cidr blocks", &ec2.SecurityGroupRuleArgs{
 			Description:     pulumi.String("Allow inbound traffic from CIDR blocks"),
 			Type:            pulumi.String("ingress"),
-			FromPort:        pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort),
-			ToPort:          pulumi.Int(locals.AwsAuroraPostgres.Spec.RdsCluster.DatabasePort),
+			FromPort:        pulumi.Int(locals.AwsRdsCluster.Spec.DatabasePort),
+			ToPort:          pulumi.Int(locals.AwsRdsCluster.Spec.DatabasePort),
 			Protocol:        pulumi.String("tcp"),
-			CidrBlocks:      pulumi.ToStringArray(locals.AwsAuroraPostgres.Spec.RdsCluster.AllowedCidrBlocks),
+			CidrBlocks:      pulumi.ToStringArray(locals.AwsRdsCluster.Spec.AllowedCidrBlocks),
 			SecurityGroupId: defaultSecurityGroup.ID(),
 		}, pulumi.Provider(awsProvider), pulumi.Parent(defaultSecurityGroup))
 		if err != nil {
