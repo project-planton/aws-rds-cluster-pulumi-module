@@ -1,11 +1,9 @@
 package pkg
 
 import (
-	"fmt"
-	"github.com/bufbuild/protovalidate-go"
 	"github.com/pkg/errors"
 	"github.com/plantoncloud/aws-rds-cluster-pulumi-module/pkg/outputs"
-	"github.com/plantoncloud/planton-cloud-apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsrdscluster"
+	"github.com/plantoncloud/planton/apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsrdscluster"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
@@ -16,18 +14,6 @@ type ResourceStack struct {
 }
 
 func Resources(ctx *pulumi.Context, stackInput *awsrdscluster.AwsRdsClusterStackInput) error {
-	v, err := protovalidate.New(
-		protovalidate.WithDisableLazy(true),
-		protovalidate.WithMessages(stackInput.Target.Spec),
-	)
-	if err != nil {
-		fmt.Println("failed to initialize validator:", err)
-	}
-
-	if err = v.Validate(stackInput.Target.Spec); err != nil {
-		return errors.Errorf("%s", err)
-	}
-
 	locals := initializeLocals(ctx, stackInput)
 	awsCredential := stackInput.AwsCredential
 
