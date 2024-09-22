@@ -1,0 +1,5 @@
+# Overview
+
+The AWS CloudFront Pulumi module provides a unified and standardized way to deploy AWS CloudFront distributions using a Kubernetes-like API resource model. Developers define their CloudFront configurations in a YAML file, specifying essential details such as the AWS credential ID through the `aws_credential_id` field in the `AwsCloudFrontSpec`. This module accepts the API resource as input and utilizes Pulumi to provision the necessary AWS resources based on the provided specifications, abstracting the underlying complexity of AWS service interactions.
+
+By creating an AWS provider within Pulumi using the supplied credentials, the module ensures secure and authenticated deployment of resources. While the given code snippet focuses on initializing the AWS provider, the module is designed to create CloudFront distributions and capture relevant outputs, such as the distribution ID, storing them in `status.stackOutputs`. This pattern enhances productivity by allowing developers to deploy complex infrastructure with a single YAML file, maintaining consistency and simplicity across multi-cloud environments.
