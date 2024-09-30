@@ -1,16 +1,14 @@
 module github.com/plantoncloud/aws-rds-cluster-pulumi-module
 
-go 1.23.0
-
-//replace github.com/plantoncloud/project-planton => ../../plantoncloud/project-planton
+go 1.23.1
 
 //replace github.com/plantoncloud/pulumi-module-golang-commons => ../../plantoncloud/pulumi-module-golang-commons
 
 require (
+	buf.build/gen/go/plantoncloud/project-planton/protocolbuffers/go v1.34.2-20240930080942-f846802b359d.2
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/pkg/errors v0.9.1
-	github.com/plantoncloud/project-planton/apis v0.0.0-20240928075735-5cce3bca65c7
-	github.com/plantoncloud/pulumi-module-golang-commons v0.0.0-20240928073143-7b29b143661c
+	github.com/plantoncloud/pulumi-module-golang-commons v0.0.0-20240930122638-5bcefac53812
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.42.1
 	github.com/pulumi/pulumi/sdk/v3 v3.130.0
 )

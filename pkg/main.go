@@ -1,19 +1,19 @@
 package pkg
 
 import (
+	awsrdsclusterv1 "buf.build/gen/go/plantoncloud/project-planton/protocolbuffers/go/project/planton/apis/provider/aws/awsrdscluster/v1"
 	"github.com/pkg/errors"
 	"github.com/plantoncloud/aws-rds-cluster-pulumi-module/pkg/outputs"
-	"github.com/plantoncloud/project-planton/apis/zzgo/cloud/planton/apis/code2cloud/v1/aws/awsrdscluster"
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 type ResourceStack struct {
-	Input  *awsrdscluster.AwsRdsClusterStackInput
+	Input  *awsrdsclusterv1.AwsRdsClusterStackInput
 	Labels map[string]string
 }
 
-func Resources(ctx *pulumi.Context, stackInput *awsrdscluster.AwsRdsClusterStackInput) error {
+func Resources(ctx *pulumi.Context, stackInput *awsrdsclusterv1.AwsRdsClusterStackInput) error {
 	locals := initializeLocals(ctx, stackInput)
 	awsCredential := stackInput.AwsCredential
 
