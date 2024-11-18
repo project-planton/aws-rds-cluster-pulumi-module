@@ -27,6 +27,7 @@ func rdsCluster(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, 
 		ApplyImmediately:                 pulumi.Bool(true),
 		EnabledCloudwatchLogsExports:     pulumi.ToStringArray(locals.AwsRdsCluster.Spec.EnabledCloudwatchLogsExports),
 		DeletionProtection:               pulumi.Bool(locals.AwsRdsCluster.Spec.DeletionProtection),
+		MasterUsername:                   pulumi.String(locals.AwsRdsCluster.Spec.MasterUser),
 	}
 
 	if locals.AwsRdsCluster.Spec.DatabasePort > 0 {
@@ -43,7 +44,6 @@ func rdsCluster(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, 
 			clusterArgs.MasterUserSecretKmsKeyId = pulumi.String(locals.AwsRdsCluster.Spec.MasterUserSecretKmsKeyId)
 		}
 	} else {
-		clusterArgs.MasterUsername = pulumi.String(locals.AwsRdsCluster.Spec.MasterUser)
 		clusterArgs.MasterPassword = pulumi.String(locals.AwsRdsCluster.Spec.MasterPassword)
 	}
 
