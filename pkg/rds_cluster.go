@@ -39,7 +39,9 @@ func rdsCluster(ctx *pulumi.Context, locals *Locals, awsProvider *aws.Provider, 
 
 	if locals.AwsRdsCluster.Spec.ManageMasterUserPassword {
 		clusterArgs.ManageMasterUserPassword = pulumi.Bool(true)
-		clusterArgs.MasterUserSecretKmsKeyId = pulumi.String(locals.AwsRdsCluster.Spec.MasterUserSecretKmsKeyId)
+		if locals.AwsRdsCluster.Spec.MasterUserSecretKmsKeyId != "" {
+			clusterArgs.MasterUserSecretKmsKeyId = pulumi.String(locals.AwsRdsCluster.Spec.MasterUserSecretKmsKeyId)
+		}
 	} else {
 		clusterArgs.MasterUsername = pulumi.String(locals.AwsRdsCluster.Spec.MasterUser)
 		clusterArgs.MasterPassword = pulumi.String(locals.AwsRdsCluster.Spec.MasterPassword)
