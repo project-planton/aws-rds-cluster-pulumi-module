@@ -8,11 +8,6 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type ResourceStack struct {
-	Input  *awsrdsclusterv1.AwsRdsClusterStackInput
-	Labels map[string]string
-}
-
 func Resources(ctx *pulumi.Context, stackInput *awsrdsclusterv1.AwsRdsClusterStackInput) error {
 	locals := initializeLocals(ctx, stackInput)
 	awsCredential := stackInput.AwsCredential
